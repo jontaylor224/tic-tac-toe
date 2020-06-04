@@ -1,6 +1,13 @@
+const cellElementArray = document.querySelectorAll(".grid-cell")
+const currentPlayerElement = document.querySelector("#currentPlayer")
+const outcomeElement = document.querySelector("#outcome")
+const resetButton = document.querySelector("#reset")
+
+// initialize the game:
 let currentPlayer = "X" // X is the starting player.
 let playerXSelections = []
 let playerOSelections = []
+let gameWasWon = false
 
 const winningCombinations = [
     [1, 2, 3],
@@ -12,53 +19,49 @@ const winningCombinations = [
     [1, 5, 9],
     [3, 5, 7],
 ]
-const currentPlayerElement = document.querySelector("#currentPlayer")
+
 currentPlayerElement.innerHTML = currentPlayer
-// Get all .grid-cell elements from the DOM and store in cellElementArray (see Resources links below):
-const cellElementArray = document.querySelectorAll(".grid-cell")
-// Loop over each element in our cellElementArray:
+
 for (
     let elementIndex = 0;
     elementIndex < cellElementArray.length;
     elementIndex += 1
 ) {
-    // Set the cell element at cellElementArray[cellIndex] to the currentCell variable:
     const currentCellElement = cellElementArray[elementIndex]
-    // Add an event listener to the currentCellElement:
+
     currentCellElement.addEventListener("click", function (event) {
-        // event.target tells us which element the user clicked (see Resources links below):
         const clickedCellElement = event.target
-        // Log the ID of the cell which was just clicked:
-        // console.log("You clicked on cell number: " + clickedCellElement.id)
-        if (clickedCellElement.innerHTML === "") {
+        if (clickedCellElement.innerHTML === "" && !gameWasWon) {
             if (currentPlayer === "X") {
                 clickedCellElement.innerHTML = "X"
-                clickedCellElement.classList.add('animate')
+                clickedCellElement.classList.add("animate")
                 playerXSelections.push(Number(clickedCellElement.id))
-                // console.log(playerXSelections)
                 currentPlayer = "O"
-                if(checkForWin(winningCombinations, playerXSelections)){
-                    alert("Player 'X' Wins!")
-                    resetBoard()
+                if (checkForWin(winningCombinations, playerXSelections)) {
+                    outcomeElement.innerHTML = 'Player "X" wins!'
+                    gameWasWon = true
                 }
             } else {
                 clickedCellElement.innerHTML = "O"
-                clickedCellElement.classList.add('animate')
+                clickedCellElement.classList.add("animate")
                 playerOSelections.push(Number(clickedCellElement.id))
-                // console.log(playerOSelections)
                 currentPlayer = "X"
-                if(checkForWin(winningCombinations, playerOSelections)){
-                    alert("Player 'O' Wins!")
-                    resetBoard()
+                if (checkForWin(winningCombinations, playerOSelections)) {
+                    outcomeElement.innerHTML = 'Player "O" wins!'
+                    gameWasWon = true
                 }
             }
-        }if (checkForDraw(playerXSelections,playerOSelections)){
-            alert("It's a Draw.")
-            resetBoard()
+            if (checkForDraw(playerXSelections, playerOSelections)) {
+                outcomeElement.innerHTML = "It's a Draw."
+            }
         }
         currentPlayerElement.innerHTML = currentPlayer
     })
 }
+
+resetButton.addEventListener("click", function () {
+    resetBoard()
+})
 
 function checkForWin(winningCombination, playerSelections) {
     let playerHasWon = false
@@ -76,16 +79,24 @@ function checkForWin(winningCombination, playerSelections) {
     return playerHasWon
 }
 
-function checkForDraw(playerOneSelection, playerTwoSelection){
-    return ((playerOneSelection.length + playerTwoSelection.length) === 9)
+function checkForDraw(playerOneSelection, playerTwoSelection) {
+    // no winner declared
+    let outcomeIsEmpty = outcomeElement.innerHTML === ""
+    // players have selected all cells
+    let allCellsAreSelected =
+        playerOneSelection.length + playerTwoSelection.length === 9
+    return outcomeIsEmpty && allCellsAreSelected
 }
 
 function resetBoard() {
     currentPlayer = "X"
+    currentPlayerElement.innerHTML = currentPlayer
     playerXSelections = []
     playerOSelections = []
-    for (element of cellElementArray){
-        element.innerHTML = ''
-        element.classList.remove('animate')
+    gameWasWon = false
+    for (element of cellElementArray) {
+        element.innerHTML = ""
+        element.classList.remove("animate")
     }
+    outcomeElement.innerHTML = ""
 }
